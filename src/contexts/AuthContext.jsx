@@ -77,11 +77,19 @@ export function AuthProvider({ children }) {
   const signUp = async (email, password, metadata = {}) => {
     setLoading(true);
     try {
-      console.log("📝 Attempting sign up...");
+      console.log("📝 Attempting sign up with:", { email, hasMetadata: !!Object.keys(metadata).length });
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: { data: metadata },
+      });
+
+      console.log("📬 Sign up response:", { 
+        hasUser: !!data?.user, 
+        hasSession: !!data?.session,
+        userId: data?.user?.id,
+        error: error?.message 
       });
 
       if (error) {
@@ -91,12 +99,17 @@ export function AuthProvider({ children }) {
 
       if (data?.user) {
         setUser(data.user);
-        console.log("✅ Sign up successful");
+        console.log("✅ Sign up successful, user ID:", data.user.id);
+        
+        // Check if email confirmation is required
+        if (!data.session) {
+          console.log("📧 Email confirmation required");
+        }
       }
 
       return { data, error: null };
     } catch (error) {
-      console.error("❌ Sign up failed:", error);
+      console.error("❌ Sign up failed with exception:", error);
       return { data: null, error };
     } finally {
       setLoading(false);

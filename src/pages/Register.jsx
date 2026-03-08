@@ -19,6 +19,8 @@ export default function Register() {
     setError("");
     setSubmitting(true);
 
+    console.log("🔐 Starting registration process for:", email);
+
     if (!name.trim()) {
       setError("Name is required.");
       setSubmitting(false);
@@ -37,20 +39,41 @@ export default function Register() {
       return;
     }
 
-    const { error: signUpError } = await signUp(email.trim(), password, {
+    const { error: signUpError, data } = await signUp(email.trim(), password, {
       full_name: name.trim(),
     });
 
-if (signUpError) {
+    console.log("📋 Registration result:", { 
+      hasError: !!signUpError, 
+      hasData: !!data,
+      userCreated: data?.user?.id 
+    });
+
+    if (signUpError) {
+      console.error("❌ Registration failed:", signUpError);
       setError(signUpError.message || "Sign up failed. Please try again.");
       setSubmitting(false);
       return;
     }
 
-    // For Supabase, show success message and redirect to login
-    // Users need to confirm their email
-    alert("Registration successful! Please check your email to confirm your account.");
-    navigate("/login", { replace: true });
+    // Check if user was created successfully
+    if (data?.user) {
+      console.log("✅ User created with ID:", data.user.id);
+      
+      // For Supabase, if no session, email confirmation is needed
+      if (!data.session) {
+        alert("Registration successful! Please check your email to confirm your account before logging in.");
+        navigate("/login", { replace: true });
+      } else {
+        // User is automatically logged in
+        navigate("/dashboard", { replace: true });
+      }
+    } else {
+      // Fallback - show message and redirect
+      alert("Registration successful! Please check your email to confirm your account.");
+      navigate("/login", { replace: true });
+    }
+    
     setSubmitting(false);
   }
 
