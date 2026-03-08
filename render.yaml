@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: vidya-mitra-frontend
+    env: docker
+    repo: https://github.com/gandhisiddhi81/Vidya_Mitra_Career_Devlopment_Platform-Frontend-.git
+    rootDir: .
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: VITE_API_BASE
+        value: https://vidya-mitra-backend.onrender.com/api
+
