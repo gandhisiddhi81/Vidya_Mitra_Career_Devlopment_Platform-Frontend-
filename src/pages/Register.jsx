@@ -9,18 +9,17 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const { signUp, loading } = useAuth();
+  const { signUp, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  if (loading) return <Loading />;
+  if (authLoading) return <Loading />;
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSubmitting(true);
 
-    console.log("🔐 Starting registration process for:", email);
-
+    // Validation
     if (!name.trim()) {
       setError("Name is required.");
       setSubmitting(false);
@@ -39,41 +38,26 @@ export default function Register() {
       return;
     }
 
-    const { error: signUpError, data } = await signUp(email.trim(), password, {
-      full_name: name.trim(),
-    });
-
-    console.log("📋 Registration result:", { 
-      hasError: !!signUpError, 
-      hasData: !!data,
-      userCreated: data?.user?.id 
-    });
+    // Sign up
+    const { user, error: signUpError } = await signUp(email.trim(), password);
 
     if (signUpError) {
-      console.error("❌ Registration failed:", signUpError);
-      setError(signUpError.message || "Sign up failed. Please try again.");
+      console.error("Registration error:", signUpError);
+      setError(signUpError);
       setSubmitting(false);
       return;
     }
 
-    // Check if user was created successfully
-    if (data?.user) {
-      console.log("✅ User created with ID:", data.user.id);
-      
-      // For Supabase, if no session, email confirmation is needed
-      if (!data.session) {
-        alert("Registration successful! Please check your email to confirm your account before logging in.");
-        navigate("/login", { replace: true });
-      } else {
-        // User is automatically logged in
-        navigate("/dashboard", { replace: true });
-      }
+    if (user) {
+      console.log("Registration successful! Redirecting to dashboard...");
+      navigate("/dashboard", { replace: true });
     } else {
-      // Fallback - show message and redirect
-      alert("Registration successful! Please check your email to confirm your account.");
+      // Supabase may require email confirmation
+      // But we'll still try to redirect to login
+      console.log("User created, redirecting to login...");
       navigate("/login", { replace: true });
     }
-    
+
     setSubmitting(false);
   }
 
@@ -158,3 +142,4 @@ export default function Register() {
     </div>
   );
 }
+

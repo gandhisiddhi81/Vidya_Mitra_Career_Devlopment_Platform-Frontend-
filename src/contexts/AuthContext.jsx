@@ -13,125 +13,89 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false); // Start with false
+  const [loading, setLoading] = useState(true);
 
+  // Initialize auth and listen for changes
   useEffect(() => {
-    console.log("🔍 Initializing Supabase Auth...");
-    
-    // Check current session
-    const initializeAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("❌ Session error:", error);
-        } else {
-          console.log("✅ Session retrieved:", !!session?.user);
-          setUser(session?.user || null);
-        }
-      } catch (err) {
-        console.error("❌ Auth initialization error:", err);
-        setUser(null);
+    console.log("🔐 Setting up Supabase auth...");
+
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error("❌ Error getting session:", error);
+      } else {
+        console.log("✅ Session loaded:", session ? "User logged in" : "No user");
+        setUser(session?.user ?? null);
       }
-    };
+      setLoading(false);
+    });
 
-    initializeAuth();
-
-    // Listen for auth changes
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("🔄 Auth state changed:", event, !!session?.user);
-      setUser(session?.user || null);
+      console.log("🔄 Auth state changed:", event, session ? "User present" : "No user");
+      setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  // Sign up with email and password
+  const signUp = async (email, password) => {
+    console.log("📝 Signing up:", email);
+    
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error("❌ Sign up error:", error);
+      return { user: null, error: error.message };
+    }
+
+    console.log("✅ Sign up successful:", data.user);
+    return { user: data.user, error: null };
+  };
+
+  // Sign in with email and password
   const signIn = async (email, password) => {
-    setLoading(true);
-    try {
-      console.log("🔑 Attempting sign in...");
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    console.log("🔑 Signing in:", email);
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (error) {
-        console.error("❌ Sign in error:", error);
-        return { data: null, error };
-      }
-
-      if (data?.user) {
-        setUser(data.user);
-        console.log("✅ Sign in successful");
-      }
-
-      return { data, error: null };
-    } catch (error) {
-      console.error("❌ Sign in failed:", error);
-      return { data: null, error };
-    } finally {
-      setLoading(false);
+    if (error) {
+      console.error("❌ Sign in error:", error);
+      return { user: null, error: error.message };
     }
+
+    console.log("✅ Sign in successful:", data.user);
+    return { user: data.user, error: null };
   };
 
-  const signUp = async (email, password, metadata = {}) => {
-    setLoading(true);
-    try {
-      console.log("📝 Attempting sign up with:", { email, hasMetadata: !!Object.keys(metadata).length });
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: metadata },
-      });
-
-      console.log("📬 Sign up response:", { 
-        hasUser: !!data?.user, 
-        hasSession: !!data?.session,
-        userId: data?.user?.id,
-        error: error?.message 
-      });
-
-      if (error) {
-        console.error("❌ Sign up error:", error);
-        return { data: null, error };
-      }
-
-      if (data?.user) {
-        setUser(data.user);
-        console.log("✅ Sign up successful, user ID:", data.user.id);
-        
-        // Check if email confirmation is required
-        if (!data.session) {
-          console.log("📧 Email confirmation required");
-        }
-      }
-
-      return { data, error: null };
-    } catch (error) {
-      console.error("❌ Sign up failed with exception:", error);
-      return { data: null, error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Sign out
   const signOut = async () => {
-    try {
-      console.log("🚪 Signing out...");
-      await supabase.auth.signOut();
-      setUser(null);
-      console.log("✅ Sign out successful");
-    } catch (error) {
+    console.log("🚪 Signing out...");
+    
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
       console.error("❌ Sign out error:", error);
+      return { error: error.message };
     }
+
+    console.log("✅ Signed out successfully");
+    return { error: null };
   };
 
   const value = {
     user,
     loading,
-    signIn,
     signUp,
+    signIn,
     signOut,
   };
 

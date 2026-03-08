@@ -27,11 +27,13 @@ export default function Login() {
     const { error: signInError } = await signIn(email.trim(), password);
 
     if (signInError) {
-      setError(signInError.message || "Sign in failed. Please try again.");
+      console.error("Login error:", signInError);
+      setError(signInError);
       setSubmitting(false);
       return;
     }
 
+    console.log("Login successful! Redirecting to dashboard...");
     navigate("/dashboard", { replace: true });
     setSubmitting(false);
   }
