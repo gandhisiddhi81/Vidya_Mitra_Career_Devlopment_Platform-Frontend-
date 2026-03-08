@@ -41,13 +41,16 @@ export default function Register() {
       full_name: name.trim(),
     });
 
-    if (signUpError) {
-      setError(signUpError);
+if (signUpError) {
+      setError(signUpError.message || "Sign up failed. Please try again.");
       setSubmitting(false);
       return;
     }
 
-    navigate("/dashboard", { replace: true });
+    // For Supabase, show success message and redirect to login
+    // Users need to confirm their email
+    alert("Registration successful! Please check your email to confirm your account.");
+    navigate("/login", { replace: true });
     setSubmitting(false);
   }
 
