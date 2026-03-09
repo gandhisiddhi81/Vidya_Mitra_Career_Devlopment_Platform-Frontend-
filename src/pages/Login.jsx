@@ -4,6 +4,8 @@ import { useAuth } from "../contexts/AuthContext";
 import Loading from "../components/Loading";
 
 export default function Login() {
+  console.log("🔑 Login.jsx: Component rendering...");
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -11,7 +13,12 @@ export default function Login() {
   const { signIn, loading } = useAuth();
   const navigate = useNavigate();
 
-  if (loading) return <Loading />;
+  console.log("🔑 Login.jsx: Auth state - loading:", loading, "user:", useAuth().user);
+
+  if (loading) {
+    console.log("🔑 Login.jsx: Showing loading state");
+    return <Loading />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -24,11 +31,14 @@ export default function Login() {
       return;
     }
 
+    console.log("Attempting login...");
     const { error: signInError } = await signIn(email.trim(), password);
 
     if (signInError) {
       console.error("Login error:", signInError);
-      setError(signInError);
+      // Handle both object and string errors
+      const errorMessage = signInError.message || signInError.toString() || "Login failed. Please try again.";
+      setError(errorMessage);
       setSubmitting(false);
       return;
     }
@@ -102,3 +112,4 @@ export default function Login() {
     </div>
   );
 }
+

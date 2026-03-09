@@ -1,6 +1,9 @@
-import AppRouter from "./router";
+import TestSimple from "./test-simple";
+
+console.log("🚀 App.jsx: Starting VidyaMitra application...");
 
 export default function App() {
-  return <AppRouter />;
+  console.log("🎯 App.jsx: Rendering TestSimple component...");
+  return <TestSimple />;
 }
 

@@ -4,6 +4,8 @@ import { useAuth } from "../contexts/AuthContext";
 import Loading from "../components/Loading";
 
 export default function Register() {
+  console.log("📝 Register.jsx: Component rendering...");
+  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,7 +14,12 @@ export default function Register() {
   const { signUp, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  if (authLoading) return <Loading />;
+  console.log("📝 Register.jsx: Auth state - loading:", authLoading, "user:", useAuth().user);
+
+  if (authLoading) {
+    console.log("📝 Register.jsx: Showing loading state");
+    return <Loading />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -43,7 +50,9 @@ export default function Register() {
 
     if (signUpError) {
       console.error("Registration error:", signUpError);
-      setError(signUpError);
+      // Handle both object and string errors
+      const errorMessage = signUpError.message || signUpError.toString() || "Registration failed. Please try again.";
+      setError(errorMessage);
       setSubmitting(false);
       return;
     }

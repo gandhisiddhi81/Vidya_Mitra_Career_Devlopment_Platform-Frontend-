@@ -10,7 +10,7 @@ services:
     region: oregon
     envVars:
       - key: VITE_API_BASE
-        value: https://vidya-mitra-backend.onrender.com/api
+        value: https://vidya-mitra-backend.onrender.com
       - key: VITE_SUPABASE_URL
         value: https://ilmwebrpykhijzkxfimc.supabase.co
       - key: VITE_SUPABASE_ANON_KEY

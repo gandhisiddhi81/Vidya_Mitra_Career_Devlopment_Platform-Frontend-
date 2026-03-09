@@ -28,6 +28,8 @@ function PublicRoute({ children }) {
 }
 
 export default function AppRouter() {
+  console.log("🛣️ AppRouter: Initializing router...");
+  
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
